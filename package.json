@@ -1,0 +1,17 @@
+{
+  "name": "tinderr",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [
+    "bd"
+  ],
+  "author": "hari",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
