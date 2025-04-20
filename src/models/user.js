@@ -1,23 +1,74 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
-const userScheme = mongoose.Schema({
-  firstname: {
-    type: String,
+const userSchema = mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+    },
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Eroor("Invalid Email" + value);
+        }
+      },
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    age: {
+      type: String,
+    },
+    gender: {
+      type: String,
+      required: [true, "Gender req"],
+    },
+    skills: {
+      type: [String],
+      default: ["JS", "React"],
+    },
+    phoneNumber: {
+      type: String,
+      validate(value) {
+        if (
+          !validator.isMobilePhone(value, "en-IN", {
+            strictMode: true,
+          })
+        ) {
+          throw new Error("Give Valid Phone Number:" + value);
+        }
+      },
+    },
   },
-  lastName: {
-    type: String,
-  },
-  password: {
-    type: String,
-  },
-  age: {
-    type: String,
-  },
-  gender: {
-    type: String,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
-const userModule = mongoose.model("User", userScheme);
+userSchema.methods.getJWT = function () {
+  const token = jwt.sign({ _id: this._id }, "DevTinder@Hari", {
+    expiresIn: "1d",
+  });
+  return token;
+};
+
+userSchema.methods.getPassword = async function (password) {
+  const user = this;
+  const hashPassword = await bcrypt.compare(password, user.password);
+  return hashPassword;
+};
+
+const userModule = mongoose.model("User", userSchema);
 
 module.exports = userModule;

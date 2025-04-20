@@ -1,19 +1,16 @@
 const express = require("express");
-
 const connectDB = require("./config/database");
-const User = require("./models/user");
-
+const cookieParser = require("cookie-parser");
+const authRouter = require("./routes/authRouter");
+const profileRouter = require("./routes/profileRouter");
+const userRouter = require("./routes/userRouter");
 const app = express();
 
-app.post("/signup", async (req, res) => {
-  const user = new User({
-    firstname: "Hari",
-    lastName: "Pradhan",
-    password: "Hari9876",
-  });
-  await user.save();
-  res.send("user data upoaded");
-});
+app.use(express.json());
+app.use(cookieParser());
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", userRouter);
 
 connectDB()
   .then(() => {
