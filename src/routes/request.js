@@ -34,20 +34,21 @@ requestRouter.post(
 
       const toUser = await User.findOne({ _id: toUserId });
       console.log("User found:", toUser);
+      if (!toUser) {
+        return res.status(404).send("User not found with the provided ID");
+      }
 
       const alredyHaveaStatus = await ConnectionRequest.findOne({
         $or: [
-          { fromUserId, toUserId },
-          { toUserId, fromUserId },
+          { fromUserId: fromUserId, toUserId: toUserId },
+          { fromUserId: toUserId, toUserId: fromUserId },
         ],
       });
 
-      if (alredyHaveaStatus) {
-        return res.status(403).send("can't send status to the from User");
-      }
+      console.log(alredyHaveaStatus);
 
-      if (!toUser) {
-        return res.status(404).send("User not found with the provided ID");
+      if (alredyHaveaStatus) {
+        return res.status(403).send("Already sent a req ");
       }
 
       const connectionRequest = new ConnectionRequest({
@@ -64,5 +65,44 @@ requestRouter.post(
     }
   }
 );
+
+requestRouter.post(
+  "/request/review/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const { status: newStatus, requestId } = req.params;
+      const loggedInUserId = req.user._id;
+
+      const VALID_REVIEW_STATUSES = ["accepted", "rejected"];
+      if (!VALID_REVIEW_STATUSES.includes(newStatus)) {
+        return res.status(400).send("Status must be either 'accepted' or 'rejected'.");
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(requestId)) {
+        return res.status(400).send("Invalid request ID format.");
+      }
+
+      const connectionRequest = await ConnectionRequest.findOne({
+        _id: requestId,
+        toUserId: loggedInUserId,
+        status: "interested", 
+      });
+
+      if (!connectionRequest) {
+        return res.status(404).send("No matching connection request found or not authorized to review.");
+      }
+
+      connectionRequest.status = newStatus;
+      await connectionRequest.save();
+
+      res.status(200).send("Request reviewed successfully.");
+    } catch (err) {
+      console.error("Error reviewing request:", err);
+      res.status(500).send("Server error: " + err.message);
+    }
+  }
+);
+
 
 module.exports = requestRouter;

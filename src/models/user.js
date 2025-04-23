@@ -20,6 +20,9 @@ const userSchema = mongoose.Schema(
         if (!validator.isEmail(value)) {
           throw new Error("Invalid Email" + value);
         }
+        if (value !== value.toLowerCase()) {
+          throw new Error("Email must be in lowercase: " + value);
+        }
       },
       unique: true,
     },
