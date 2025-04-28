@@ -3,7 +3,7 @@ const userRouter = express.Router();
 const { userAuth } = require("../middlewares/userAuth");
 const User = require("../models/user");
 const ConnectionRequest = require("../models/connectionRequest");
-const userInfo = "firstName lastName email age gender ";
+const userInfo = "firstName lastName email gender photoURL skills";
 
 userRouter.get("/user/request/receive", userAuth, async (req, res) => {
   try {
@@ -15,11 +15,11 @@ userRouter.get("/user/request/receive", userAuth, async (req, res) => {
       path: "fromUserId",
       select: userInfo,
     });
+
     if (connectionRequest.length === 0) {
       return res.status(400).send("No connection Req Availaiable");
     }
     const cleanUsers = connectionRequest.map((req) => req.fromUserId);
-
     res.json(cleanUsers);
   } catch (err) {
     console.log(err.message);
@@ -55,7 +55,6 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
 
     const connections = await ConnectionRequest.find({
       $or: [{ fromUserId: userId }, { toUserId: userId }],
-      status: "accepted",
     });
 
     const connectedUserIds = connections.map((conn) =>
@@ -73,7 +72,7 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
     res.send(nonConnectedUsers);
   } catch (err) {
     console.log(err.message);
-    res.status(404).send("ERROR", err.message);
+    res.status(500).send({ERROR: err.message});
   }
 });
 

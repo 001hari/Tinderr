@@ -15,8 +15,6 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
 
     const user = await User.findById(userId);
 
-    // console.log(cookies);
-
     res.send(user);
   } catch (err) {
     res.status(404).send({ error: err.message });
@@ -26,9 +24,9 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   const userId = req.user._id;
   const data = req.body;
-  console.log(userId);
+
   try {
-    const allowedUpdates = ["firstName", "lastName", "skills", "phoneNumber"];
+    const allowedUpdates = ["firstName", "lastName", "skills", "phoneNumber","photoURL"];
     const isUpdateAllowed = Object.keys(data).every((k) =>
       allowedUpdates.includes(k)
     );

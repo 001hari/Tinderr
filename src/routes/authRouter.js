@@ -8,8 +8,7 @@ const { validatepassword } = require("../utils/validation");
 authRouter.post("/signup", async (req, res) => {
   try {
     validatepassword(req.body.password);
-    // const user = new User(req.body);
-    // console.log(user);
+
     const {
       firstName,
       lastName,
@@ -21,7 +20,7 @@ authRouter.post("/signup", async (req, res) => {
       phoneNumber,
     } = req.body;
     const hashPassword = await bcrypt.hash(password, 10);
-    console.log(hashPassword);
+    
     const user = new User({
       firstName,
       lastName,
@@ -43,26 +42,28 @@ authRouter.post("/signup", async (req, res) => {
 });
 
 authRouter.post("/login", async (req, res) => {
-  // console.log("login called");
-
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email }); // find is givina a obj inside array where findone wull directly five an obj
+    const user = await User.findOne({ email });
     if (!user) {
       throw new Error("Invalid Credentials");
     }
-    // console.log(user.password);
+
     const hashPassword = await user.getPassword(password);
-    // console.log(password, user.password, pass);
 
     if (hashPassword) {
-      //making a cookie
       const token = user.getJWT();
       res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
         expires: new Date(Date.now() + 60 * 60 * 1000),
       });
 
-      res.send("Login Successfull By:" + user.firstName);
+      res.send({
+        message: "Login Successful",
+        user,
+      });
     } else {
       throw new Error("Invalid Credentials");
     }

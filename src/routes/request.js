@@ -6,16 +6,15 @@ const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
 
 requestRouter.post(
-  "/request/send/:status/:userId",
+  "/request/send",
   userAuth,
   async (req, res) => {
     try {
-      const status = req.params.status;
-      const toUserId = req.params.userId;
+      const status = req.body.status;
+      const toUserId = req.body.userId;
       const fromUserId = req.user._id;
 
       const isStatusValid = ["interested", "ignored"].includes(status);
-      console.log("Status Valid:", isStatusValid);
 
       if (!isStatusValid) {
         return res
@@ -33,7 +32,7 @@ requestRouter.post(
       }
 
       const toUser = await User.findOne({ _id: toUserId });
-      console.log("User found:", toUser);
+      
       if (!toUser) {
         return res.status(404).send("User not found with the provided ID");
       }
@@ -45,7 +44,6 @@ requestRouter.post(
         ],
       });
 
-      console.log(alredyHaveaStatus);
 
       if (alredyHaveaStatus) {
         return res.status(403).send("Already sent a req ");
@@ -67,11 +65,12 @@ requestRouter.post(
 );
 
 requestRouter.post(
-  "/request/review/:status/:requestId",
+  "/request/review",
   userAuth,
   async (req, res) => {
     try {
-      const { status: newStatus, requestId } = req.params;
+      const newStatus = req.body.status;
+      // const requestId = req.body._id;
       const loggedInUserId = req.user._id;
 
       const VALID_REVIEW_STATUSES = ["accepted", "rejected"];
@@ -79,12 +78,12 @@ requestRouter.post(
         return res.status(400).send("Status must be either 'accepted' or 'rejected'.");
       }
 
-      if (!mongoose.Types.ObjectId.isValid(requestId)) {
-        return res.status(400).send("Invalid request ID format.");
-      }
+      // if (!mongoose.Types.ObjectId.isValid(requestId)) {
+      //   return res.status(400).send("Invalid request ID format.");
+      // }
 
       const connectionRequest = await ConnectionRequest.findOne({
-        _id: requestId,
+        // _id: requestId,
         toUserId: loggedInUserId,
         status: "interested", 
       });
