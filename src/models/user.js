@@ -44,11 +44,7 @@ const userSchema = mongoose.Schema(
     phoneNumber: {
       type: String,
       validate(value) {
-        if (
-          !validator.isMobilePhone(value, "en-IN", {
-            strictMode: true,
-          })
-        ) {
+        if (!validator.isMobilePhone(value, "en-IN")) {
           throw new Error("Give Valid Phone Number:" + value);
         }
       },
@@ -68,7 +64,7 @@ const userSchema = mongoose.Schema(
 );
 
 userSchema.methods.getJWT = function () {
-  const token = jwt.sign({ _id: this._id }, "DevTinder@Hari", {
+  const token = jwt.sign({ _id: this._id }, process.env.JWT_TOKEN, {
     expiresIn: "1d",
   });
   return token;

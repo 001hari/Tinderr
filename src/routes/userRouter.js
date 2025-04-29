@@ -17,7 +17,7 @@ userRouter.get("/user/request/receive", userAuth, async (req, res) => {
     });
 
     if (connectionRequest.length === 0) {
-      return res.status(400).send("No connection Req Availaiable");
+      return res.status(200).json([]);
     }
     const cleanUsers = connectionRequest.map((req) => req.fromUserId);
     res.json(cleanUsers);
